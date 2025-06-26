@@ -95,17 +95,18 @@ async function getPosts(searchParams: SearchParams) {
 export default async function PostsPage({
   searchParams,
 }: {
-  searchParams: SearchParams
+  searchParams: Promise<SearchParams>
 }) {
-  const { posts, pagination } = await getPosts(searchParams)
+  const resolvedSearchParams = await searchParams
+  const { posts, pagination } = await getPosts(resolvedSearchParams)
 
   return (
     <Layout>
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-4">
-            {searchParams.tag ? `Posts tagged with "${searchParams.tag}"` : 
-             searchParams.search ? `Search results for "${searchParams.search}"` : 
+            {resolvedSearchParams.tag ? `Posts tagged with "${resolvedSearchParams.tag}"` : 
+             resolvedSearchParams.search ? `Search results for "${resolvedSearchParams.search}"` : 
              'All Posts'}
           </h1>
           <p className="text-muted-foreground">

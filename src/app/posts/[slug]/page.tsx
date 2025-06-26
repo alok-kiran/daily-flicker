@@ -2,8 +2,10 @@ import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { Layout } from '@/components/layout/layout'
 import { formatDate } from '@/lib/utils'
+import { PostImage } from '@/components/post-image'
+import { AvatarImage } from '@/components/avatar-image'
+import { CommentForm } from '@/components/comment-form'
 import Link from 'next/link'
-import Image from 'next/image'
 
 async function getPost(slug: string) {
   try {
@@ -51,9 +53,10 @@ async function getPost(slug: string) {
 export default async function PostPage({
   params,
 }: {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }) {
-  const post = await getPost(params.slug)
+  const { slug } = await params
+  const post = await getPost(slug)
 
   if (!post) {
     notFound()
@@ -66,11 +69,11 @@ export default async function PostPage({
         <header className="mb-8">
           {post.thumbnail && (
             <div className="relative h-64 md:h-96 w-full mb-8 rounded-lg overflow-hidden">
-              <Image
+              <PostImage
                 src={post.thumbnail}
                 alt={post.title}
-                fill
-                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
+                priority
               />
             </div>
           )}
@@ -100,10 +103,10 @@ export default async function PostPage({
             
             <div className="flex items-center space-x-4 pt-4">
               {post.author.image && (
-                <img
+                <AvatarImage
                   src={post.author.image}
                   alt={post.author.name || 'Author'}
-                  className="h-12 w-12 rounded-full"
+                  className="h-12 w-12 rounded-full object-cover"
                 />
               )}
               <div>
@@ -138,10 +141,10 @@ export default async function PostPage({
               {post.comments.map((comment) => (
                 <div key={comment.id} className="flex space-x-4">
                   {comment.author?.image && (
-                    <img
+                    <AvatarImage
                       src={comment.author.image}
                       alt={comment.author.name || 'Commenter'}
-                      className="h-10 w-10 rounded-full flex-shrink-0"
+                      className="h-10 w-10 rounded-full flex-shrink-0 object-cover"
                     />
                   )}
                   <div className="flex-1">
@@ -171,15 +174,8 @@ export default async function PostPage({
             </p>
           )}
           
-          {/* Comment Form Placeholder */}
-          <div className="mt-8 p-6 bg-secondary/50 rounded-lg">
-            <p className="text-center text-muted-foreground">
-              <Link href="/auth/signin" className="text-primary hover:underline">
-                Sign in
-              </Link>
-              {' '}to leave a comment
-            </p>
-          </div>
+          {/* Comment Form */}
+          <CommentForm postId={post.id} />
         </section>
       </article>
     </Layout>

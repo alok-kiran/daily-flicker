@@ -31,10 +31,6 @@ export const authOptions: NextAuthOptions = {
       return token
     },
   },
-  pages: {
-    signIn: '/auth/signin',
-    error: '/auth/error',
-  },
   session: {
     strategy: 'database',
   },

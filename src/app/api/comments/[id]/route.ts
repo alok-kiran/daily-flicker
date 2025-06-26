@@ -12,9 +12,10 @@ const updateCommentSchema = z.object({
 // PUT - Update comment (for moderation)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session?.user) {
@@ -25,7 +26,7 @@ export async function PUT(
     }
 
     const comment = await prisma.comment.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         post: {
           select: { authorId: true }
@@ -68,7 +69,7 @@ export async function PUT(
     }
 
     const updatedComment = await prisma.comment.update({
-      where: { id: params.id },
+      where: { id },
       data: validatedData,
       include: {
         author: {
@@ -101,9 +102,10 @@ export async function PUT(
 // DELETE - Delete comment
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session?.user) {
@@ -114,7 +116,7 @@ export async function DELETE(
     }
 
     const comment = await prisma.comment.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         post: {
           select: { authorId: true }
@@ -142,7 +144,7 @@ export async function DELETE(
     }
 
     await prisma.comment.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return NextResponse.json({ message: 'Comment deleted successfully' })

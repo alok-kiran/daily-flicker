@@ -1,6 +1,7 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { formatDate, truncateText } from '@/lib/utils'
+import { PostImage } from '@/components/post-image'
+import { AvatarImage } from '@/components/avatar-image'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
 interface PostCardProps {
@@ -34,11 +35,10 @@ export function PostCard({ post }: PostCardProps) {
     <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
       {post.thumbnail && (
         <div className="relative h-48 w-full">
-          <Image
+          <PostImage
             src={post.thumbnail}
             alt={post.title}
-            fill
-            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         </div>
       )}
@@ -46,10 +46,10 @@ export function PostCard({ post }: PostCardProps) {
       <CardHeader className="pb-3">
         <div className="flex items-center space-x-2 text-sm text-muted-foreground mb-2">
           {post.author.image && (
-            <img
+            <AvatarImage
               src={post.author.image}
               alt={post.author.name || 'Author'}
-              className="h-6 w-6 rounded-full"
+              className="h-6 w-6 rounded-full object-cover"
             />
           )}
           <span>{post.author.name}</span>
