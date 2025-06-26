@@ -136,6 +136,24 @@
   overflow: hidden;
 }
 
+/* Mobile carousel styles */
+.mobile-featured-carousel .swiper-pagination {
+  bottom: 4px !important;
+}
+
+.mobile-featured-carousel .swiper-pagination-bullet {
+  width: 12px !important;
+  height: 12px !important;
+  margin: 0 6px !important;
+  opacity: 0.5 !important;
+  transition: all 0.3s ease !important;
+}
+
+.mobile-featured-carousel .swiper-pagination-bullet-active {
+  opacity: 1 !important;
+  transform: scale(1.2) !important;
+}
+
 /* Rich Text Editor Styles */
 .ProseMirror {
   outline: none !important;
