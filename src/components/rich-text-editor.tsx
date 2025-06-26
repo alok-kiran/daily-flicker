@@ -9,6 +9,9 @@ import TextStyle from '@tiptap/extension-text-style'
 import Color from '@tiptap/extension-color'
 import Heading from '@tiptap/extension-heading'
 import Placeholder from '@tiptap/extension-placeholder'
+import ListItem from '@tiptap/extension-list-item'
+import BulletList from '@tiptap/extension-bullet-list'
+import OrderedList from '@tiptap/extension-ordered-list'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { 
@@ -44,19 +47,35 @@ export function RichTextEditor({ content, onChange, placeholder = "Start writing
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        bulletList: {
-          keepMarks: true,
-          keepAttributes: true,
-        },
-        orderedList: {
-          keepMarks: true,
-          keepAttributes: true,
-        },
+        // Disable the default list extensions since we're adding them separately
+        bulletList: false,
+        orderedList: false,
+        listItem: false,
         // Enable HTML parsing to preserve pasted formatting
         paragraph: {
           HTMLAttributes: {
             class: 'my-2',
           },
+        },
+      }),
+      // Add list extensions separately with better paste handling
+      ListItem.configure({
+        HTMLAttributes: {
+          class: 'my-1',
+        },
+      }),
+      BulletList.configure({
+        keepMarks: true,
+        keepAttributes: true,
+        HTMLAttributes: {
+          class: 'list-disc list-inside my-4 ml-4',
+        },
+      }),
+      OrderedList.configure({
+        keepMarks: true,
+        keepAttributes: true,
+        HTMLAttributes: {
+          class: 'list-decimal list-inside my-4 ml-4',
         },
       }),
       Image.configure({
@@ -97,6 +116,80 @@ export function RichTextEditor({ content, onChange, placeholder = "Start writing
       handleClick: (view) => {
         view.focus()
         return false
+      },
+      // Better paste handling for lists
+      handlePaste: () => {
+        // Let the editor handle the paste normally
+        // The separate list extensions will handle list parsing better
+        return false
+      },
+      // Transform pasted content to preserve list structure
+      transformPastedHTML: (html) => {
+        // Ensure list items are properly wrapped
+        html = html.replace(/<li>/g, '<li>')
+        html = html.replace(/<\/li>/g, '</li>')
+        // Ensure bullet points from plain text are converted to lists
+        html = html.replace(/^[\s]*[•·*-]\s+(.+)$/gm, '<ul><li>$1</li></ul>')
+        html = html.replace(/^[\s]*\d+\.\s+(.+)$/gm, '<ol><li>$1</li></ol>')
+        return html
+      },
+      transformPastedText: (text) => {
+        // Convert plain text lists to HTML
+        const lines = text.split('\n')
+        let html = ''
+        let inBulletList = false
+        let inOrderedList = false
+        
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i].trim()
+          
+          // Check for bullet list items
+          if (line.match(/^[•·*-]\s+(.+)/)) {
+            const content = line.replace(/^[•·*-]\s+/, '')
+            if (!inBulletList) {
+              html += '<ul>'
+              inBulletList = true
+            }
+            if (inOrderedList) {
+              html += '</ol>'
+              inOrderedList = false
+            }
+            html += `<li>${content}</li>`
+          }
+          // Check for numbered list items
+          else if (line.match(/^\d+\.\s+(.+)/)) {
+            const content = line.replace(/^\d+\.\s+/, '')
+            if (!inOrderedList) {
+              html += '<ol>'
+              inOrderedList = true
+            }
+            if (inBulletList) {
+              html += '</ul>'
+              inBulletList = false
+            }
+            html += `<li>${content}</li>`
+          }
+          // Regular text
+          else {
+            if (inBulletList) {
+              html += '</ul>'
+              inBulletList = false
+            }
+            if (inOrderedList) {
+              html += '</ol>'
+              inOrderedList = false
+            }
+            if (line) {
+              html += `<p>${line}</p>`
+            }
+          }
+        }
+        
+        // Close any open lists
+        if (inBulletList) html += '</ul>'
+        if (inOrderedList) html += '</ol>'
+        
+        return html
       },
     },
     onUpdate: ({ editor }) => {
