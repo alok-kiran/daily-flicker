@@ -18,11 +18,12 @@ const updatePostSchema = z.object({
 // GET - Fetch single post
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const post = await prisma.post.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         author: {
           select: {
@@ -74,9 +75,10 @@ export async function GET(
 // PUT - Update post
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session?.user) {
@@ -87,7 +89,7 @@ export async function PUT(
     }
 
     const post = await prisma.post.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { authorId: true }
     })
 
@@ -119,7 +121,7 @@ export async function PUT(
       const existingPost = await prisma.post.findFirst({
         where: { 
           slug: updateData.slug as string,
-          NOT: { id: params.id }
+          NOT: { id }
         }
       })
       
@@ -159,7 +161,7 @@ export async function PUT(
     }
 
     const updatedPost = await prisma.post.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         ...updateData,
         ...(validatedData.tags && {

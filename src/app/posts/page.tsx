@@ -6,6 +6,7 @@ import Link from 'next/link'
 interface SearchParams {
   page?: string
   tag?: string
+  category?: string
   search?: string
 }
 
@@ -23,6 +24,12 @@ async function getPosts(searchParams: SearchParams) {
       some: {
         slug: searchParams.tag
       }
+    }
+  }
+
+  if (searchParams.category) {
+    where.category = {
+      slug: searchParams.category
     }
   }
 
@@ -54,6 +61,7 @@ async function getPosts(searchParams: SearchParams) {
               image: true,
             }
           },
+          category: true,
           tags: true,
           _count: {
             select: {
@@ -105,7 +113,8 @@ export default async function PostsPage({
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-4">
-            {resolvedSearchParams.tag ? `Posts tagged with "${resolvedSearchParams.tag}"` : 
+            {resolvedSearchParams.category ? `${resolvedSearchParams.category.charAt(0).toUpperCase() + resolvedSearchParams.category.slice(1)} Posts` :
+             resolvedSearchParams.tag ? `Posts tagged with "${resolvedSearchParams.tag}"` : 
              resolvedSearchParams.search ? `Search results for "${resolvedSearchParams.search}"` : 
              'All Posts'}
           </h1>
@@ -130,7 +139,7 @@ export default async function PostsPage({
               <div className="flex justify-center items-center space-x-4">
                 {pagination.page > 1 && (
                   <Link
-                    href={`/posts?page=${pagination.page - 1}`}
+                    href={`/posts?page=${pagination.page - 1}${resolvedSearchParams.category ? `&category=${resolvedSearchParams.category}` : ''}${resolvedSearchParams.tag ? `&tag=${resolvedSearchParams.tag}` : ''}${resolvedSearchParams.search ? `&search=${resolvedSearchParams.search}` : ''}`}
                     className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors"
                   >
                     Previous
@@ -143,7 +152,7 @@ export default async function PostsPage({
 
                 {pagination.page < pagination.pages && (
                   <Link
-                    href={`/posts?page=${pagination.page + 1}`}
+                    href={`/posts?page=${pagination.page + 1}${resolvedSearchParams.category ? `&category=${resolvedSearchParams.category}` : ''}${resolvedSearchParams.tag ? `&tag=${resolvedSearchParams.tag}` : ''}${resolvedSearchParams.search ? `&search=${resolvedSearchParams.search}` : ''}`}
                     className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors"
                   >
                     Next
