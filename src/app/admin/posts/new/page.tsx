@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
@@ -9,9 +9,11 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
 import { RichTextEditor } from '@/components/rich-text-editor'
 import { ImagePreview } from '@/components/image-preview'
-import { ArrowLeft, Save, Eye } from 'lucide-react'
+import { ArrowLeft, Save, Eye, X } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 
@@ -26,8 +28,72 @@ export default function NewPostPage() {
     excerpt: '',
     thumbnail: '',
     published: false,
-    featured: false
+    featured: false,
+    categoryId: '',
+    tagIds: [] as string[]
   })
+  
+  const [categories, setCategories] = useState<Array<{id: string, name: string, color: string}>>([])
+  const [tags, setTags] = useState<Array<{id: string, name: string}>>([])
+  const [newTag, setNewTag] = useState('')
+
+  // Fetch categories and tags
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch categories
+        const categoriesRes = await fetch('/api/categories')
+        if (categoriesRes.ok) {
+          const categoriesData = await categoriesRes.json()
+          setCategories(categoriesData)
+        }
+
+        // Fetch tags
+        const tagsRes = await fetch('/api/tags')
+        if (tagsRes.ok) {
+          const tagsData = await tagsRes.json()
+          setTags(tagsData)
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  const handleAddTag = async () => {
+    if (!newTag.trim()) return
+
+    try {
+      const response = await fetch('/api/tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newTag.trim() })
+      })
+
+      if (response.ok) {
+        const newTagData = await response.json()
+        setTags(prev => [...prev, newTagData])
+        setFormData(prev => ({
+          ...prev,
+          tagIds: [...prev.tagIds, newTagData.id]
+        }))
+        setNewTag('')
+        toast.success('Tag created and added!')
+      }
+    } catch (error) {
+      console.error('Error creating tag:', error)
+      toast.error('Failed to create tag')
+    }
+  }
+
+  const handleRemoveTag = (tagId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      tagIds: prev.tagIds.filter(id => id !== tagId)
+    }))
+  }
 
   // Auto-generate slug from title
   const handleTitleChange = (title: string) => {
@@ -233,6 +299,95 @@ export default function NewPostPage() {
                   checked={formData.published}
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, published: checked }))}
                 />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Category Selection */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Category</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Select
+                value={formData.categoryId}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, categoryId: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: category.color }}
+                        />
+                        {category.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </CardContent>
+          </Card>
+
+          {/* Tags Selection */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Tags</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Selected Tags */}
+              {formData.tagIds.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {formData.tagIds.map((tagId) => {
+                    const tag = tags.find(t => t.id === tagId)
+                    return tag ? (
+                      <Badge key={tagId} variant="secondary" className="flex items-center gap-1">
+                        {tag.name}
+                        <X 
+                          className="h-3 w-3 cursor-pointer" 
+                          onClick={() => handleRemoveTag(tagId)}
+                        />
+                      </Badge>
+                    ) : null
+                  })}
+                </div>
+              )}
+
+              {/* Add New Tag */}
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Add new tag..."
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
+                />
+                <Button onClick={handleAddTag} variant="outline" size="sm">
+                  Add
+                </Button>
+              </div>
+
+              {/* Existing Tags */}
+              <div className="space-y-2">
+                <Label>Available Tags</Label>
+                <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                  {tags.filter(tag => !formData.tagIds.includes(tag.id)).map((tag) => (
+                    <Badge 
+                      key={tag.id} 
+                      variant="outline" 
+                      className="cursor-pointer hover:bg-secondary"
+                      onClick={() => setFormData(prev => ({
+                        ...prev,
+                        tagIds: [...prev.tagIds, tag.id]
+                      }))}
+                    >
+                      {tag.name}
+                    </Badge>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>

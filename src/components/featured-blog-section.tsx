@@ -21,6 +21,12 @@ interface Post {
     name?: string | null
     image?: string | null
   }
+  category?: {
+    id: string
+    name: string
+    slug: string
+    color: string
+  } | null
   tags?: Array<{
     id: string
     name: string
@@ -56,18 +62,13 @@ export function FeaturedBlogSection({ posts }: FeaturedBlogSectionProps) {
         
         {/* Content overlay */}
         <div className={`absolute bottom-0 left-0 right-0 ${isLarge ? 'p-6' : 'p-4'}`}>
-          {post.tags && post.tags.length > 0 && (
+          {post.category && (
             <Badge 
               variant="secondary" 
-              className={`mb-2 text-white rounded-md ${isLarge ? 'px-3 py-1 text-sm' : 'px-2 py-1 text-xs'} ${
-                post.tags[0].name.toLowerCase() === 'travel' 
-                  ? 'bg-blue-500 hover:bg-blue-600' 
-                  : post.tags[0].name.toLowerCase() === 'technology'
-                  ? 'bg-cyan-500 hover:bg-cyan-600'
-                  : 'bg-orange-500 hover:bg-orange-600'
-              }`}
+              className={`mb-2 text-white rounded-md ${isLarge ? 'px-3 py-1 text-sm' : 'px-2 py-1 text-xs'}`}
+              style={{ backgroundColor: post.category.color }}
             >
-              {post.tags[0].name}
+              {post.category.name}
             </Badge>
           )}
           
@@ -143,12 +144,13 @@ export function FeaturedBlogSection({ posts }: FeaturedBlogSectionProps) {
               
               {/* Content overlay */}
               <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 lg:p-8">
-                {featuredPost.tags && featuredPost.tags.length > 0 && (
+                {featuredPost.category && (
                   <Badge 
                     variant="secondary" 
-                    className="mb-2 sm:mb-3 lg:mb-4 bg-orange-500 text-white hover:bg-orange-600 rounded-md px-2 py-1 sm:px-3 text-xs sm:text-sm"
+                    className="mb-2 sm:mb-3 lg:mb-4 text-white rounded-md px-2 py-1 sm:px-3 text-xs sm:text-sm"
+                    style={{ backgroundColor: featuredPost.category.color }}
                   >
-                    {featuredPost.tags[0].name}
+                    {featuredPost.category.name}
                   </Badge>
                 )}
                 
@@ -187,18 +189,13 @@ export function FeaturedBlogSection({ posts }: FeaturedBlogSectionProps) {
                 
                 {/* Content overlay */}
                 <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
-                  {otherPosts[0].tags && otherPosts[0].tags.length > 0 && (
+                  {otherPosts[0].category && (
                     <Badge 
                       variant="secondary" 
-                      className={`mb-2 text-white rounded-md px-3 py-1 text-sm ${
-                        otherPosts[0].tags[0].name.toLowerCase() === 'travel' 
-                          ? 'bg-blue-500 hover:bg-blue-600' 
-                          : otherPosts[0].tags[0].name.toLowerCase() === 'technology'
-                          ? 'bg-cyan-500 hover:bg-cyan-600'
-                          : 'bg-orange-500 hover:bg-orange-600'
-                      }`}
+                      className="mb-2 text-white rounded-md px-3 py-1 text-sm"
+                      style={{ backgroundColor: otherPosts[0].category.color }}
                     >
-                      {otherPosts[0].tags[0].name}
+                      {otherPosts[0].category.name}
                     </Badge>
                   )}
                   
@@ -236,18 +233,13 @@ export function FeaturedBlogSection({ posts }: FeaturedBlogSectionProps) {
                   
                   {/* Content overlay */}
                   <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
-                    {post.tags && post.tags.length > 0 && (
+                    {post.category && (
                       <Badge 
                         variant="secondary" 
-                        className={`mb-2 text-white rounded-md px-2 py-1 text-xs ${
-                          post.tags[0].name.toLowerCase() === 'travel' 
-                            ? 'bg-blue-500 hover:bg-blue-600' 
-                            : post.tags[0].name.toLowerCase() === 'technology'
-                            ? 'bg-cyan-500 hover:bg-cyan-600'
-                            : 'bg-orange-500 hover:bg-orange-600'
-                        }`}
+                        className="mb-2 text-white rounded-md px-2 py-1 text-xs"
+                        style={{ backgroundColor: post.category.color }}
                       >
-                        {post.tags[0].name}
+                        {post.category.name}
                       </Badge>
                     )}
                     

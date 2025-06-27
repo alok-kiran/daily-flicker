@@ -5,6 +5,7 @@ import { formatDate } from '@/lib/utils'
 import { PostImage } from '@/components/post-image'
 import { AvatarImage } from '@/components/avatar-image'
 import { CommentForm } from '@/components/comment-form'
+import { PostContent } from '@/components/post-content'
 import Link from 'next/link'
 
 async function getPost(slug: string) {
@@ -126,8 +127,8 @@ export default async function PostPage({
         </header>
 
         {/* Post Content */}
-        <div className="prose prose-lg max-w-none mb-12">
-          <div dangerouslySetInnerHTML={{ __html: post.content }} />
+        <div className="mb-12">
+          <PostContent content={post.content} />
         </div>
 
         {/* Comments Section */}

@@ -93,6 +93,8 @@ model Post {
   comments    Comment[]
   tagIds      String[]  @db.ObjectId
   tags        Tag[]     @relation(fields: [tagIds], references: [id])
+  categoryId  String?   @db.ObjectId
+  category    Category? @relation(fields: [categoryId], references: [id])
 }
 
 model Comment {
@@ -113,6 +115,17 @@ model Tag {
   slug    String   @unique
   postIds String[] @db.ObjectId
   posts   Post[]   @relation(fields: [postIds], references: [id])
+}
+
+model Category {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  name        String @unique
+  slug        String @unique
+  description String?
+  color       String @default("#3B82F6") // Default blue color
+  posts       Post[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 enum Role {

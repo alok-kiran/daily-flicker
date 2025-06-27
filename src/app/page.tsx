@@ -16,6 +16,7 @@ async function getPosts() {
             image: true,
           }
         },
+        category: true,
         tags: true,
         _count: {
           select: {

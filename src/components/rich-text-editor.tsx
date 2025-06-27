@@ -68,14 +68,14 @@ export function RichTextEditor({ content, onChange, placeholder = "Start writing
         keepMarks: true,
         keepAttributes: true,
         HTMLAttributes: {
-          class: 'list-disc list-inside my-4 ml-4',
+          class: 'my-4',
         },
       }),
       OrderedList.configure({
         keepMarks: true,
         keepAttributes: true,
         HTMLAttributes: {
-          class: 'list-decimal list-inside my-4 ml-4',
+          class: 'my-4',
         },
       }),
       Image.configure({

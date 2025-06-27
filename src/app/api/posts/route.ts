@@ -12,7 +12,9 @@ const createPostSchema = z.object({
   published: z.boolean().default(false),
   featured: z.boolean().default(false),
   thumbnail: z.string().optional(),
-  tags: z.array(z.string()).optional(),
+  categoryId: z.string().optional(),
+  tagIds: z.array(z.string()).optional(),
+  tags: z.array(z.string()).optional(), // Keep for backward compatibility
 })
 
 // GET - Fetch posts with pagination and filtering
@@ -57,6 +59,7 @@ export async function GET(request: NextRequest) {
               image: true,
             }
           },
+          category: true,
           tags: true,
           _count: {
             select: {
@@ -120,8 +123,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Handle tags
-    const tagIds = []
+    // Handle tags - use tagIds if provided, otherwise fall back to tags array
+    const finalTagIds = validatedData.tagIds || []
+    
     if (validatedData.tags && validatedData.tags.length > 0) {
       for (const tagName of validatedData.tags) {
         const tagSlug = generateSlug(tagName)
@@ -137,7 +141,7 @@ export async function POST(request: NextRequest) {
           }
         })
         
-        tagIds.push(tag.id)
+        finalTagIds.push(tag.id)
       }
     }
 
@@ -150,9 +154,10 @@ export async function POST(request: NextRequest) {
         published: validatedData.published,
         featured: validatedData.featured,
         thumbnail: validatedData.thumbnail,
+        categoryId: validatedData.categoryId || null,
         authorId: session.user.id,
         publishedAt: validatedData.published ? new Date() : null,
-        tagIds
+        tagIds: finalTagIds
       },
       include: {
         author: {
@@ -163,6 +168,7 @@ export async function POST(request: NextRequest) {
             image: true,
           }
         },
+        category: true,
         tags: true,
       }
     })
